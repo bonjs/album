@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Hexo</title>
+  
+	<style>
+		* {
+			padding: 0px; 
+			margin: 0px;
+		}
+		body { font-family: sans-serif; }
+
+		.draggable {
+			border: white 2px solid;// rgba(159, 107, 107, 0.14) solid;
+			width: 100px;
+			height: 100px;
+			background: #8e9478;
+			line-height: 100px;
+			text-align: center;
+			color: yellow;
+			border-radius: 10px;
+			position: absolute;
+			font-weight: bold;
+		}
+		.draggable.is-pointer-down {
+			background: #09F;
+		}
+		.draggable.is-dragging { opacity: 0.7; }
+		
+		.container {
+			margin: 100px; 
+			border: 1px red solid;
+			width: 900px;
+			height: 500px;
+			position: relative;
+		}
+		.container li {
+			border: 1px white solid;
+			list-style: none;
+			padding:30px;
+			float: left;
+			//display: inline-block;
+			width: 100px;
+			height: 100px;
+			//border: 1px solid rgba(93, 95, 67, 0.37)
+		}
+
+	</style>
+
+</head>
+<body>
+
+	<div class="container">
+		<li><div class="draggable">a</div></li>
+		<li><div class="draggable">b</div></li>
+		<li><div class="draggable">红包</div></li>
+		
+		<li><div class="draggable">和谐福</div></li>
+		<li><div class="draggable">红包</div></li>
+		<li><div class="draggable">红包</div></li>
+		<li><div class="draggable">富强福</div></li>
+		
+		<li><div class="draggable" style="color: white;background: #F90;">ok</div></li>
+		<li><div class="draggable">友善福</div></li>
+		<li><div class="draggable">红包</div></li>
+		<li><div class="draggable">红包</div></li>
+		<li><div class="draggable">敬业福</div></li>
+		<li><div class="draggable">爱国福</div></li>
+		<li><div class="draggable">红包</div></li>
+	</div>
+	
+	<script src="./es5-shim.js"></script>
+	<script src="./es5-sham.js"></script>
+	<script src="//cdn.bootcss.com/jquery/1.8.0/jquery.min.js"></script>
+	<script src="./draggabilly.pkgd.js"></script>
+	
+	<script src="./index.js"></script>
+</body>
+</html>
