@@ -60,34 +60,79 @@ var Main = function() {
 	});
 	
 	
-	var nearestBlockExt;
-	draggable.on('dragMove', function(e, pointer, moveVector ) {
-		
-		var currentBlock = $(this).data('block');	// 当前block
-		currentBlock.currentPosition = $(this).position();
-		
-		nearestBlockExt = me.getNearestBlock(currentBlock);
-		nearestBlockExt.block.currentPosition = $(this).position();	// 同步当前位置
-		
-		var currentIndex = currentBlock.el.index('.draggable');
-		var nearestIndex = nearestBlockExt.block.el.index('.draggable');
-		
-		var smallerIndex = currentIndex < nearestIndex ? currentIndex + 1 : nearestIndex;
-		var biggerIndex = currentIndex > nearestIndex ? currentIndex - 1 : nearestIndex;
-		
-		$(this).css('z-index', '3');
-		var el = nearestBlockExt.block.el;
-		if (nearestBlockExt.distance > 50) { // 如果距离大于50, 则回到原来位置
-			el.css({
-				'z-index': 'auto',
-				'border': '2px white solid'
-			});
+	draggable.on({
+		in: function(e) {
+			console.log('in');
 			
-			/*
+			var currentBlock = $(this).data('block');	// 当前block
+			currentBlock.currentPosition = $(this).position();
+			
+			nearestBlockExt = me.getNearestBlock(currentBlock);
+			nearestBlockExt.block.currentPosition = $(this).position();	// 同步当前位置
+			
+			var el = nearestBlockExt.block.el;
+			console.log('html: ' + el.html());
+			
+			var currentIndex = currentBlock.el.parent().index('li');
+			var nearestIndex = nearestBlockExt.block.el.index('.draggable');
+			
+			console.log(currentIndex, nearestIndex);
+			
+			var smallerIndex = currentIndex < nearestIndex ? currentIndex + 1 : nearestIndex;
+			var biggerIndex = currentIndex > nearestIndex ? currentIndex - 1 : nearestIndex;
+			
 			me.blocks.forEach(function(it, i) {
 				
 				if(i >= smallerIndex && i <= biggerIndex) {
 					
+					if(currentIndex > nearestIndex) {
+						var nextIndex = i + 1;
+						var nextPosition = me.blocks[i + 1].position;
+					} else {
+						var nextIndex = i - 1;
+						var nextPosition = me.blocks[i - 1].position;
+					}
+					$(it.el).animate(nextPosition, animateTime, function() {
+						$(this).css('z-index', 'auto');
+						// 动画完毕，　把dom也交替
+						it.el.appendTo($('.container li').eq(nextIndex));
+
+					});
+					it.currentPosition = {
+						left: nextPosition.left,
+						top: nextPosition.top
+					}
+					
+				}
+			});
+			$(this).appendTo($('.container li').eq(nearestIndex));
+			
+			el.css({
+				'z-index': '2',
+				'border': '2px red dashed'
+			});
+		},
+		out: function(e) {
+			console.log('out');
+			
+			return;
+			
+			var currentBlock = $(this).data('block');	// 当前block
+			currentBlock.currentPosition = $(this).position();
+			
+			nearestBlockExt = me.getNearestBlock(currentBlock);
+			nearestBlockExt.block.currentPosition = $(this).position();	// 同步当前位置
+			
+			var el = nearestBlockExt.block.el;
+			var currentIndex = currentBlock.el.index('.draggable');
+			var nearestIndex = nearestBlockExt.block.el.index('.draggable');
+			
+			var smallerIndex = currentIndex < nearestIndex ? currentIndex + 1 : nearestIndex;
+			var biggerIndex = currentIndex > nearestIndex ? currentIndex - 1 : nearestIndex;
+			
+			me.blocks.forEach(function(it, i) {
+				
+				if(i >= smallerIndex && i <= biggerIndex) {
 					$(it.el).animate(it.position, animateTime, function() {
 						$(this).css('z-index', 'auto');
 					});
@@ -97,58 +142,66 @@ var Main = function() {
 					}
 				}
 			});
-			*/
-			
-		} else {
 			el.css({
-				'z-index': '2',
-				'border': '2px #36ab7a dashed'
-			});
-			
-			
-			me.blocks.forEach(function(it, i) {
-				
-				if(i >= smallerIndex && i <= biggerIndex) {
-					
-					if(currentIndex > nearestIndex) {
-						var nextPosition = me.blocks[i + 1].position;
-					} else {
-						var nextPosition = me.blocks[i - 1].position;
-					}
-					$(it.el).animate(nextPosition, animateTime, function() {
-						$(this).css('z-index', 'auto');
-					});
-					it.currentPosition = {
-						left: nextPosition.left,
-						top: nextPosition.top
-					}
-				}
+				'z-index': 'auto',
+				//'border': '2px white solid'
 			});
 		}
-		
-	}).on('dragEnd', function(e, pointer) {
-		
-		var currentBlock = $(this).data('block');	// 当前block
-		console.log(nearestBlockExt.distance);
-		if(nearestBlockExt.distance > 50) {	// 如果距离大于30, 则回到原来位置
-			$(this).animate(currentBlock.position, animateTime, function() {
-				$(this).css('z-index', 'auto');
-			});
-			
-		} else {
-			currentBlock.position = {
-				left: nearestBlockExt.block.position.left,
-				top: nearestBlockExt.block.position.top,
-			}
-			$(this).animate(currentBlock.position, animateTime, function() {
-				$(this).css('z-index', 'auto');
-			});			
-		}
-		nearestBlockExt.block.el.css('border', '2px white solid');
-		
-	}).on('pointerUp', function() {
-		$(this).focus(); // 兼容ie8的处理
 	});
+	
+	
+	var accessTag = false;
+	var nearestBlockExt;
+	draggable.on({
+		dragMove: function(e, pointer, moveVector ) {
+			var currentBlock = $(this).data('block');	// 当前block
+			currentBlock.currentPosition = $(this).position();
+			
+			nearestBlockExt = me.getNearestBlock(currentBlock);
+			nearestBlockExt.block.currentPosition = $(this).position();	// 同步当前位置
+			
+			if (nearestBlockExt.distance > 50) { // 如果距离大于50, 则回到原来位置
+				if(accessTag) {
+					$(this).trigger('out');
+					accessTag = !accessTag;
+				}
+			} else {
+				if(!accessTag) {
+					$(this).trigger('in');
+					accessTag = !accessTag;
+				}
+			}
+		},
+		dragEnd: function(e, pointer) {
+			
+			var currentBlock = $(this).data('block');	// 当前block
+			if(nearestBlockExt.distance > 50) {	// 如果距离大于30, 则回到原来位置
+				$(this).animate(currentBlock.position, animateTime, function() {
+					$(this).css('z-index', 'auto');
+					me.blocks.forEach(function(it, i) {
+						it.position = it.el.position();
+					});
+				});
+			} else {
+				currentBlock.position = {
+					left: nearestBlockExt.block.position.left,
+					top: nearestBlockExt.block.position.top,
+				}
+				$(this).animate(currentBlock.position, animateTime, function() {
+					$(this).css('z-index', 'auto');
+					me.blocks.forEach(function(it, i) {
+						it.position = it.el.position();
+					});
+				});			
+			}
+			//nearestBlockExt.block.el.css('border', '2px white solid');
+			
+			
+		},
+		pointerUp: function() {
+			$(this).focus(); // 兼容ie8的处理
+		}
+	})
 }
 
 
