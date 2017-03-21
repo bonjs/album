@@ -45,8 +45,7 @@ var ImageDrag = function() {
 	
 	var me = this;
 	
-	this.colNum = 5;
-	
+	this.initPanel();
 	
 	
 	
@@ -55,8 +54,6 @@ var ImageDrag = function() {
 	var draggable = $('.draggable').draggabilly();
 	
 	this.blocks = [];
-	
-	this.initPanel();
 	
 	var animateTime = 200;
 	
@@ -212,37 +209,16 @@ ImageDrag.getInstance = function() {
 }();
 
 ImageDrag.prototype = {
-	
 	contructor: ImageDrag,
 	initPanel: function() {
 		console.log('initPanel');
 		
-		var arr = [];
-		Array.prototype.push.apply(arr, this.blocks);
-		
-		
-		var totalSize = this.blocks.length;
-		var rows = ~~(this.totalSize / this.cols) + 1;
-		var remainder = totalSize % this.cols;
-		
-		
-		for(var i = 0; i < rows; i ++) {
-			var ul = $('<ul />');
-			
-			for(var j = 0; j < Math.min(arr.length, this.cols); j ++) {
-				var b = arr.shift();
-				var el = $('<div class="draggable">' + i + ', ' + j + '</div>');
-				ul.append(el);
-			}
-			
-			$('.container').append(ul);
-		}
 		
 	},
-	addBlock: function(i) {
+	addBlock: function() {
 		var block = new Block();
 		
-		var blockEl = $('<div class="draggable">' + i + '</div>')
+		var blockEl = $('<div class="draggable">0</div>')
 		
 		block.el = blockEl;
 		$(blockEl).data('block', block);
