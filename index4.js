@@ -49,11 +49,33 @@ var ImageDrag = function(opt) {
 	this.cols = opt.cols || 4;
 	
 	
+	//var width 	= $('.draggable').width();			// 图标边长
+
+	var draggable = $('.draggable').draggabilly();
+	
 	this.blocks = [];
+	
+	//this.initPanel();
 	
 	var animateTime = 200;
 	
-	this.initPanel();
+	draggable.css('position', 'absolute');	// 兼容ie8
+	
+	draggable.each(function(i, blockEl) {
+		var block = new Block();
+		
+		block.el = $(blockEl);
+		$(blockEl).data('block', block);
+		
+		block.position = $(blockEl).position();
+		
+		block.idx = i;
+		$(blockEl).attr('idx', i);
+		
+		me.blocks.push(block);
+		
+		$(blockEl).css(block.position);	// 兼容ie8
+	});
 	
 	
 	$(document).on('access', '.draggable', function() {
@@ -87,6 +109,8 @@ var ImageDrag = function(opt) {
 	var accessTag = false;
 	$(document).on('dragMove', '.draggable', function(e, pointer, moveVector) {
 		
+		
+			
 		var currentBlock = $(this).data('block');	// 当前block
 		
 		var nearestBlockExt = me.getNearestBlock(currentBlock);
@@ -123,8 +147,6 @@ var ImageDrag = function(opt) {
 		
 			var smallerIndex = currentIndex < nearestIndex ? currentIndex + 1 : nearestIndex;
 			var biggerIndex = currentIndex > nearestIndex ? currentIndex - 1 : nearestIndex;
-			
-			var nearestIdx = nearestBlockExt.block.idx;	// 记录下idx
 			me.blocks.forEach(function(it) {
 				
 				if(it.idx >= smallerIndex && it.idx <= biggerIndex) {
@@ -139,24 +161,18 @@ var ImageDrag = function(opt) {
 					var nextBlock = me.getBlockByIndex(nextIndex);
 					var nextPosition = nextBlock.position;	// 获取下一个block位置
 					
-					it.el.animate(nextPosition, animateTime, function() {
-						it.el.css('z-index', 'auto');
-						
-						it.el.attr('idx', nextIndex);
-						it.position = nextPosition;
-						console.log('nextIndex', nextIndex);
-						
+					$(it.el).animate(nextPosition, animateTime, function() {
+						$(this).css('z-index', 'auto');
 						it.idx = nextIndex;
+						it.el.attr('index', nextIndex);
+						
+						it.position = nextPosition;
 					});
-					
-					
 				}
 			});
 			
-			console.log('nearestIdx' , nearestIdx);
-			
 			// 将index更新
-			currentBlock.idx = nearestIdx;//nearestBlockExt.block.idx;
+			currentBlock.idx = nearestBlockExt.block.idx;
 			currentBlock.el.attr('idx', currentBlock.idx);  
 			
 			currentBlock.position = {
@@ -185,34 +201,28 @@ ImageDrag.prototype = {
 	
 	contructor: ImageDrag,
 	initPanel: function() {
+		console.log('initPanel');
 		
-		var me = this;
+		var arr = [];
+		Array.prototype.push.apply(arr, this.blocks);
 		
-		var draggable = $('.draggable').draggabilly();
-		draggable.css('position', 'absolute');	// 兼容ie8
-		
-		draggable.each(function(i, blockEl) {
-			blockEl.remove();
-			me.addBlock($(blockEl).html());
-		});
-	},
-	getNewPosition: function() {
 		
 		var totalSize = this.blocks.length;
-		var rowsIndex = ~~(totalSize / this.cols);
-		var colsIndex = totalSize % this.cols;
+		var rows = ~~(this.totalSize / this.cols) + 1;
+		var remainder = totalSize % this.cols;
 		
-		//console.log(rowsIndex, colsIndex);
+		for(var i = 0; i < rows; i ++) {
+			var ul = $('<ul />');
+			
+			for(var j = 0; j < Math.min(arr.length, this.cols); j ++) {
+				var b = arr.shift();
+				var el = $('<div class="draggable">' + i + ', ' + j + '</div>');
+				ul.append(el);
+			}
+			
+			$('.container').append(ul);
+		}
 		
-		var margin = 10, width = height = 100;
-		
-		var left 	= colsIndex * width + (colsIndex * 2 + 1) * margin;
-		var top 	= rowsIndex * height + (rowsIndex * 2 + 1) * margin;
-		
-		return {
-			left: left,
-			top: top
-		};
 	},
 	addBlock: function(html, movable) {	// movable 为true时, 添加的block不可拖动
 		
@@ -223,26 +233,41 @@ ImageDrag.prototype = {
 		movable || blockEl.addClass('drag-disabled');
 		
 		
-		$('.container').append(blockEl);
+		var li = $('<li />');
+		li.append(blockEl);
 		
-		blockEl.draggabilly();
+		var lastUl = $('.container ul:last');
+		/**
+			1, 如果有lastUl
+				1, 如果lastUl里的子个数等于this.cols, 则新增一个ul
+				2, 如果小于this.cols, 则在lastUl里添加block
+			2, 如果没有lastUl, 新增一个ul
+		*/
+		
+		if(!lastUl.length || lastUl.length && lastUl.find('li').length == this.cols) {
+			lastUl = $('<ul />');
+			lastUl.append(li);
+			$('.container').append(lastUl);
+		} else {
+			lastUl.append(li);	
+		}
+		
+		li.find('.draggable').draggabilly();
 		
 		if(blockEl.hasClass('drag-disabled')) {
 			blockEl.draggabilly('disable');
 		}
 		
-		var position = this.getNewPosition();
-		
 		var block = new Block();
 		
 		block.el = blockEl;
 		block.idx = this.blocks.length;
-		block.position = position;
-		
-		blockEl.css(position);
+		block.position = blockEl.position();
 		
 		blockEl.data('block', block);
 		blockEl.attr('idx', block.idx);
+		
+		blockEl.css(block.position);	// 兼容ie8
 		
 		this.blocks.push(block);
 	},
@@ -253,27 +278,42 @@ ImageDrag.prototype = {
 			2, 将后面的block的position更新为下一个的position
 			3, 删除dom
 		*/
-		
-		this.blocks = this.getOrderList();	// 重新按idx排序
-		
-		for(var i = this.blocks.length - 1; i >= 0; i --) {
-			var b = this.blocks[i];
-			if(b.idx > idx) {
-				var prev = this.blocks[i - 1];
-				b.idx = b.idx - 1;
-				b.position = {
-					left: prev.position.left,
-					top: prev.position.top,
+		var index = function() {
+			var returnIndex;
+			this.blocks.some(function(it, i) {
+				if(it.idx == idx) {
+					returnIndex = i;
 				}
-				
+				return it.idx == idx;
+			});
+			return returnIndex;
+		}.bind(this)();
+		
+		console.log(index);
+		
+		if(index !== undefined) {
+			for(var i = this.blocks.length - 1; i >= 0; i --) {
+				var b = this.blocks[i];
+				var prev = this.blocks[i - 1];
+				if(b.idx > idx) {
+					b.idx = b.idx - 1;
+					b.position = {
+						left: prev.position.left,
+						top: prev.position.top,
+					}
+				}
 				b.el.animate(b.position, 150, function() {});
 			}
+			this.blocks.splice(index, 1);
 		}
 		
-		this.blocks[idx].el.remove();	// 删除dom
-		this.blocks.splice(idx, 1);	// 在blocks中删除
+		$('.container .draggable').eq(index).remove();
 	},
-	
+	getNewPosition: function() {
+		var list = this.getOrderList();
+		var lastBlock = list[list.length - 1];
+		return listBlock
+	},
 	getOrderList: function() {
 		return this.blocks.sort(function(a, b) {
 			return a.idx - b.idx;

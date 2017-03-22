@@ -56,6 +56,17 @@
 	<button id=remove>remove</button>
 
 	<div class="container">
+		<ul>
+			<li><div class="draggable">0</div></li>
+			<li><div class="draggable">1</div></li>
+			<li><div class="draggable">2</div></li>
+			<li><div class="draggable">3</div></li>
+		</ul>
+		<ul>
+			<li><div class="draggable">8</div></li>
+			<li><div class="draggable">9</div></li>
+			<li><div class="draggable">10</div></li>
+		</li>
 	</div>
 	
 	
@@ -74,7 +85,7 @@
 		];
 		
 		$('#add').click(function() {
-			m.addBlock(html.join(''));
+			m.addBlock(html.join(''), false);
 		});
 		
 		$('#remove').click(function() {
