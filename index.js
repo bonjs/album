@@ -173,8 +173,6 @@ ImageDrag.prototype = {
 		var me = this;
 		
 		var draggable = $('.draggable').draggabilly();
-		draggable.css('position', 'absolute');	// 兼容ie8
-		
 		draggable.each(function(i, blockEl) {
 			//blockEl.remove();
 			me.addBlock(blockEl);
