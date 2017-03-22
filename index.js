@@ -38,7 +38,6 @@ Block.prototype = {
 	}
 };
 
-
 var ImageDrag = function(opt) {
 	
 	opt = opt || {};
@@ -54,11 +53,8 @@ var ImageDrag = function(opt) {
 	
 	this.initPanel();
 	
-	
 	$(document).on('access', '.draggable', function() {
-
 		var currentBlock = $(this).data('block');	// 当前block
-		
 		var nearestBlockExt = me.getNearestBlock(currentBlock);
 		
 		var el = nearestBlockExt.block.el;
@@ -69,11 +65,9 @@ var ImageDrag = function(opt) {
 		nearestBlockExt.block.shake();
 	}).on('leave', '.draggable', function() {
 		var currentBlock = $(this).data('block');	// 当前block
-			
 		var nearestBlockExt = me.getNearestBlock(currentBlock);
 		
 		var el = nearestBlockExt.block.el;
-		
 		el.css({
 			'border': '3px white solid'
 		});
@@ -81,12 +75,10 @@ var ImageDrag = function(opt) {
 		nearestBlockExt.block.stopShake();
 	});
 	
-	
 	var accessTag = false;
 	$(document).on('dragMove', '.draggable', function(e, pointer, moveVector) {
 		
 		var currentBlock = $(this).data('block');	// 当前block
-		
 		var nearestBlockExt = me.getNearestBlock(currentBlock);
 		
 		currentBlock.el.css({
@@ -127,27 +119,23 @@ var ImageDrag = function(opt) {
 				
 				if(it.idx >= smallerIndex && it.idx <= biggerIndex) {
 					// it为需要移动的block
-					
 					if(currentIndex > nearestIndex) {
 						var nextIndex = it.idx + 1;
 					} else {
 						var nextIndex = it.idx - 1;
 					}
-				
+
 					var nextBlock = me.getBlockByIndex(nextIndex);
 					var nextPosition = nextBlock.position;	// 获取下一个block位置
 					
 					it.el.animate(nextPosition, animateTime, function() {
 						it.el.css('z-index', 'auto');
-						
 						it.el.attr('idx', nextIndex);
 						it.position = nextPosition;
-						
 						it.idx = nextIndex;
 					});
 				}
 			});
-			
 			
 			// 将index更新
 			currentBlock.idx = nearestIdx;//nearestBlockExt.block.idx;
@@ -236,25 +224,24 @@ ImageDrag.prototype = {
 		block.el = blockEl;
 		
 		if(index === undefined) {	// 如果没有设置index, 则在最后
-			block.position = me.getNewPosition();
 			block.idx = me.blocks.length;
+			block.position = me.getNewPosition();
 		} else {
+			block.idx = index;
 			block.position = {				// 如果设置了index, 则取index处的坐标, 
 				left: me.blocks[index].position.left,
 				top: me.blocks[index].position.top
 			};
-			block.idx = index;
 			
 			// 原位置处及后面的后移
 			for(var i = index; i < me.blocks.length; i ++) {
 				var b = me.blocks[i];
-				
-				var next = me.blocks[i + 1];
 				b.idx = b.idx + 1;
 				
 				if(i == me.blocks.length - 1) { // 最后一个
 					b.position = me.getNewPosition();	
 				} else {
+					var next = me.blocks[i + 1];
 					b.position = {
 						left: next.position.left,
 						top: next.position.top
@@ -265,7 +252,6 @@ ImageDrag.prototype = {
 		}
 		
 		blockEl.css(block.position);
-		
 		blockEl.data('block', block);
 		blockEl.attr('idx', block.idx);
 		
@@ -278,7 +264,6 @@ ImageDrag.prototype = {
 			2, 将后面的block的position更新为下一个的position
 			3, 删除dom
 		*/
-		
 		this.blocks = this.getOrderList();	// 重新按idx排序
 		
 		for(var i = this.blocks.length - 1; i >= 0; i --) {
@@ -295,7 +280,6 @@ ImageDrag.prototype = {
 				b.el.animate(b.position, 150, function() {});
 			}
 		}
-		
 		
 		var deleteIndex;
 		for(var i = 0; i < this.blocks.length; i ++) {
