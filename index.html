@@ -12,16 +12,16 @@
 		body { font-family: sans-serif; }
 
 		.draggable {
+			position: absolute;
 			border: white 2px solid;// rgba(159, 107, 107, 0.14) solid;
+			border-radius: 10px;
 			width: 100px;
 			height: 100px;
-			background: #61a99f;
 			line-height: 100px;
-			text-align: center;
+			background: #8d9b6d;
 			color: yellow;
-			border-radius: 10px;
-			position: absolute;
 			font-weight: bold;
+			text-align: center;
 		}
 		.draggable.is-pointer-down {
 			background: #09F;
@@ -29,25 +29,21 @@
 		.draggable.is-dragging { opacity: 0.7; }
 		
 		.drag-container {
-			//width: 700px;
-			//height: 500px;
 			position: relative;
-			border: 1px red solid;
-		}
-		.drag-container li {
-			border: 1px white solid;
-			list-style: none;
-			padding:10px;
-			float: left;
-			//display: inline-block;
-			width: 100px;
-			height: 100px;
-			//border: 1px solid rgba(93, 95, 67, 0.37)
 		}
 		
-		.drag-container ul {
-			clear: both;
-		}	
+		.drag-disabled {
+			cursor: not-allowed;
+			background: gray;
+		}
+		
+		.close {
+			position: absolute;
+			cursor: pointer;
+			top: -3px;
+			right: 5px;
+			line-height: initial;
+		}
 
 	</style>
 
@@ -56,11 +52,12 @@
 	<button id=add>add</button>
 	<button id=add2>加在倒数第二个位置</button>
 	<button id=addDisabled>addDisabled</button>
-	<button id=remove>remove</button>
+	<button id=remove>删除第二个</button>
 
 	<div class="drag-container">
-		<div class="draggable">0</div>
-		<div class="draggable">1</div>
+		<div class="draggable">1<span class="close">x</span></div>
+		<div class="draggable">2<span class="close">x</span></div>
+		<div class="draggable">3<span class="close">x</span></div>
 		<div class="draggable drag-disabled">不可</div>
 	</div>
 	
@@ -77,24 +74,24 @@
 		});
 		
 		var html = [
-			'<div>fdsfd<button>remove</button></div>'
-		];
+			'<div><span class="close">x</span></div>'
+		].join('');
 		
 		$('#add').click(function() {
-			m.addBlock(html.join(''));
+			m.addBlock(html);
 		});
 		$('#add2').click(function() {
-			m.addBlock(html.join(''), true, m.blocks.length - 1);
+			m.addBlock(html, true, m.blocks.length - 1);
 		});
 		$('#addDisabled').click(function() {
-			m.addBlock('<div>不可</div>', false);
+			m.addBlock('<div class="drag-disabled"><span class="close">x</span></div>', false);
 		});
 		
 		$('#remove').click(function() {
 			m.removeBlock(1);
 		});
 		
-		$(document).on('click', '.draggable button', function() {
+		$(document).on('click', '.draggable .close', function() {
 			m.removeBlock($(this).parent().attr('idx'));
 		});
 		
