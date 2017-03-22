@@ -17,7 +17,7 @@ Block.prototype = {
 			var left = this.position.left;
 			var top = this.position.top;
 			this.el.animate({
-				left: left + 2,
+				left: left + 2
 			}, 100);
 			this.el.animate({
 				left: left - 2 
@@ -90,7 +90,7 @@ var ImageDrag = function(opt) {
 		var nearestBlockExt = me.getNearestBlock(currentBlock);
 		
 		currentBlock.el.css({
-			'z-index': '2',
+			'z-index': '2'
 		});
 		
 		if (nearestBlockExt.distance < 50) {
@@ -155,7 +155,7 @@ var ImageDrag = function(opt) {
 			
 			currentBlock.position = {
 				left: nearestBlockExt.block.position.left,
-				top: nearestBlockExt.block.position.top,
+				top: nearestBlockExt.block.position.top
 			};
 		}
 		$(this).animate(currentBlock.position, animateTime, function() {
@@ -170,7 +170,6 @@ var ImageDrag = function(opt) {
 		});
 	}).on('pointerUp', '.draggable', function() {
 		$(this).focus(); // 兼容ie8的处理
-		
 	});
 };
 
@@ -189,7 +188,7 @@ ImageDrag.prototype = {
 		draggable.css('position', 'absolute');	// 兼容ie8
 		
 		draggable.each(function(i, blockEl) {
-			blockEl.remove();
+			//blockEl.remove();
 			me.addBlock(blockEl);
 		});
 	},
@@ -242,7 +241,7 @@ ImageDrag.prototype = {
 		} else {
 			block.position = {				// 如果设置了index, 则取index处的坐标, 
 				left: me.blocks[index].position.left,
-				top: me.blocks[index].position.top,
+				top: me.blocks[index].position.top
 			};
 			block.idx = index;
 			
@@ -258,7 +257,7 @@ ImageDrag.prototype = {
 				} else {
 					b.position = {
 						left: next.position.left,
-						top: next.position.top,
+						top: next.position.top
 					}
 				}
 				b.el.animate(b.position, 150, function() {});
