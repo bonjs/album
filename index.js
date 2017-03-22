@@ -13,7 +13,7 @@ Block.prototype = {
 		return this.el.position();
 	},
 	shake: function() {	// 振动
-	
+		return;
 		this.interval = setInterval(function() {
 			var left = this.position.left;
 			var top = this.position.top;
@@ -46,8 +46,8 @@ var ImageDrag = function(opt) {
 	
 	var me = this;
 	
+	this.containerSelector = opt.container;
 	this.cols = opt.cols || 4;
-	
 	
 	this.blocks = [];
 	
@@ -57,7 +57,7 @@ var ImageDrag = function(opt) {
 	
 	
 	$(document).on('access', '.draggable', function() {
-		console.log('in');
+
 		var currentBlock = $(this).data('block');	// 当前block
 		
 		var nearestBlockExt = me.getNearestBlock(currentBlock);
@@ -81,7 +81,6 @@ var ImageDrag = function(opt) {
 		
 		nearestBlockExt.block.stopShake();
 	});
-	
 	
 	
 	var accessTag = false;
@@ -144,16 +143,12 @@ var ImageDrag = function(opt) {
 						
 						it.el.attr('idx', nextIndex);
 						it.position = nextPosition;
-						console.log('nextIndex', nextIndex);
 						
 						it.idx = nextIndex;
 					});
-					
-					
 				}
 			});
 			
-			console.log('nearestIdx' , nearestIdx);
 			
 			// 将index更新
 			currentBlock.idx = nearestIdx;//nearestBlockExt.block.idx;
@@ -184,6 +179,9 @@ var ImageDrag = function(opt) {
 ImageDrag.prototype = {
 	
 	contructor: ImageDrag,
+	getContainer: function() {
+		return $(this.containerSelector);
+	},
 	initPanel: function() {
 		
 		var me = this;
@@ -193,61 +191,90 @@ ImageDrag.prototype = {
 		
 		draggable.each(function(i, blockEl) {
 			blockEl.remove();
-			me.addBlock($(blockEl).html());
+			me.addBlock(blockEl);
 		});
 	},
 	getNewPosition: function() {
 		
 		var totalSize = this.blocks.length;
-		var rowsIndex = ~~(totalSize / this.cols);
-		var colsIndex = totalSize % this.cols;
+		var rowsIndex = this.rowsIndex = ~~(totalSize / this.cols);
+		var colsIndex = this.colsIndex = totalSize % this.cols;
 		
-		//console.log(rowsIndex, colsIndex);
-		
-		var margin = 10, width = height = 100;
+		// block间距
+		// 宽度高度
+		var margin = 10, width = height = 110;
 		
 		var left 	= colsIndex * width + (colsIndex * 2 + 1) * margin;
 		var top 	= rowsIndex * height + (rowsIndex * 2 + 1) * margin;
 		
+		this.containerHeight = top + margin + height;
 		return {
 			left: left,
 			top: top
 		};
 	},
-	addBlock: function(html, movable) {	// movable 为true时, 添加的block不可拖动
+	addBlock: function(html, movable, index) {	// movable 为true时, 添加的block不可拖动
+	
+		var me = this;
+		
+		this.blocks = this.getOrderList();	// 排序
 		
 		movable = movable !== false ? true : false; 
 		
-		var blockEl = $('<div class="draggable">' + html + '</div>');
+		var blockEl = $(html).addClass('draggable');
 		
 		movable || blockEl.addClass('drag-disabled');
 		
-		
-		$('.container').append(blockEl);
+		this.getContainer().append(blockEl);
 		
 		blockEl.draggabilly();
 		
 		if(blockEl.hasClass('drag-disabled')) {
-			blockEl.draggabilly('disable');
+			blockEl.draggabilly('disable'); //destroy
 		}
-		
-		var position = this.getNewPosition();
 		
 		var block = new Block();
 		
 		block.el = blockEl;
-		block.idx = this.blocks.length;
-		block.position = position;
 		
-		blockEl.css(position);
+		if(index === undefined) {	// 如果没有设置index, 则在最后
+			block.position = me.getNewPosition();
+			block.idx = me.blocks.length;
+		} else {
+			block.position = {				// 如果设置了index, 则取index处的坐标, 
+				left: me.blocks[index].position.left,
+				top: me.blocks[index].position.top,
+			};
+			block.idx = index;
+			
+			// 原位置处及后面的后移
+			for(var i = index; i < me.blocks.length; i ++) {
+				var b = me.blocks[i];
+				
+				var next = me.blocks[i + 1];
+				b.idx = b.idx + 1;
+				
+				if(i == me.blocks.length - 1) { // 最后一个
+					b.position = me.getNewPosition();	
+				} else {
+					b.position = {
+						left: next.position.left,
+						top: next.position.top,
+					}
+				}
+				b.el.animate(b.position, 150, function() {});
+			}
+		}
+		
+		blockEl.css(block.position);
 		
 		blockEl.data('block', block);
 		blockEl.attr('idx', block.idx);
 		
 		this.blocks.push(block);
+		this.getContainer().height(this.containerHeight);
 	},
 	removeBlock: function(idx) {
-		console.log('remove');
 		/*
 			1, 从blocks数组中删除idx为idx的block
 			2, 将后面的block的position更新为下一个的position
@@ -261,6 +288,7 @@ ImageDrag.prototype = {
 			if(b.idx > idx) {
 				var prev = this.blocks[i - 1];
 				b.idx = b.idx - 1;
+				b.el.attr('idx', b.idx);
 				b.position = {
 					left: prev.position.left,
 					top: prev.position.top,
@@ -270,8 +298,19 @@ ImageDrag.prototype = {
 			}
 		}
 		
-		this.blocks[idx].el.remove();	// 删除dom
-		this.blocks.splice(idx, 1);	// 在blocks中删除
+		
+		var deleteIndex;
+		for(var i = 0; i < this.blocks.length; i ++) {
+			if(this.blocks[i].idx == idx) {
+				deleteIndex = i;
+				break;
+			}
+		}
+		
+		if(deleteIndex !== undefined) {
+			this.blocks[deleteIndex].el.remove();	// 删除dom
+			this.blocks.splice(deleteIndex, 1);	// 在blocks中删除
+		}
 	},
 	
 	getOrderList: function() {
@@ -300,11 +339,16 @@ ImageDrag.prototype = {
 				distance = dis;
 				index = i;
 			}
-			return {
-				index: index,
-				distance: distance,
-				block: me.blocks[index]
-			};
+			
+			if(!it.el.hasClass('drag-disabled')) {	// 如果有drag-disabled样式, 则不考虑
+				return {
+					index: index,
+					distance: distance,
+					block: me.blocks[index]
+				};
+			} else {
+				return o;
+			}
 		}, {
 			index: -1,
 			distance: Number.MAX_VALUE

@@ -28,12 +28,13 @@
 		}
 		.draggable.is-dragging { opacity: 0.7; }
 		
-		.container {
+		.drag-container {
 			//width: 700px;
 			//height: 500px;
 			position: relative;
+			border: 1px red solid;
 		}
-		.container li {
+		.drag-container li {
 			border: 1px white solid;
 			list-style: none;
 			padding:10px;
@@ -44,7 +45,7 @@
 			//border: 1px solid rgba(93, 95, 67, 0.37)
 		}
 		
-		.container ul {
+		.drag-container ul {
 			clear: both;
 		}	
 
@@ -53,11 +54,15 @@
 </head>
 <body>
 	<button id=add>add</button>
+	<button id=add2>加在倒数第二个位置</button>
+	<button id=addDisabled>addDisabled</button>
 	<button id=remove>remove</button>
 
-	<div class="container">
+	<div class="drag-container">
+		<div class="draggable">0</div>
+		<div class="draggable">1</div>
+		<div class="draggable drag-disabled">不可</div>
 	</div>
-	
 	
 	<script src="./es5-shim.js"></script>
 	<script src="./es5-sham.js"></script>
@@ -67,21 +72,31 @@
 	<script src="./index.js"></script>
 	
 	<script>
-		var m = new ImageDrag();
+		var m = new ImageDrag({
+			container: '.drag-container'
+		});
 		
 		var html = [
-			'<div>fdsfd</div>'
+			'<div>fdsfd<button>remove</button></div>'
 		];
 		
 		$('#add').click(function() {
 			m.addBlock(html.join(''));
+		});
+		$('#add2').click(function() {
+			m.addBlock(html.join(''), true, m.blocks.length - 1);
+		});
+		$('#addDisabled').click(function() {
+			m.addBlock('<div>不可</div>', false);
 		});
 		
 		$('#remove').click(function() {
 			m.removeBlock(1);
 		});
 		
-		
+		$(document).on('click', '.draggable button', function() {
+			m.removeBlock($(this).parent().attr('idx'));
+		});
 		
 		
 		
