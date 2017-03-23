@@ -53,7 +53,10 @@ var ImageDrag = function(opt) {
 	
 	this.initPanel();
 	
-	$(document).on('access', '.draggable', function() {
+	// 移除之前实例化绑定的事件
+	$(this.containerSelector).unbind('access leave dragMove dragEnd pointerUp');
+	
+	$(this.containerSelector).on('access', '.draggable', function() {
 		var currentBlock = $(this).data('block');	// 当前block
 		var nearestBlockExt = me.getNearestBlock(currentBlock);
 		
@@ -76,7 +79,7 @@ var ImageDrag = function(opt) {
 	});
 	
 	var accessTag = false;
-	$(document).on('dragMove', '.draggable', function(e, pointer, moveVector) {
+	$(this.containerSelector).on('dragMove', '.draggable', function(e, pointer, moveVector) {
 		
 		var currentBlock = $(this).data('block');	// 当前block
 		var nearestBlockExt = me.getNearestBlock(currentBlock);
@@ -235,6 +238,7 @@ ImageDrag.prototype = {
 			for(var i = index; i < me.blocks.length; i ++) {
 				var b = me.blocks[i];
 				b.idx = b.idx + 1;
+				b.el.attr('idx', b.idx);
 				
 				if(i == me.blocks.length - 1) { // 最后一个
 					b.position = me.getNewPosition();	
