@@ -13,7 +13,6 @@ Block.prototype = {
 		return this.el.position();
 	},
 	shake: function() {	// 振动
-		return;
 		this.interval = setInterval(function() {
 			var left = this.position.left;
 			var top = this.position.top;
