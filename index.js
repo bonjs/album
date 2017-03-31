@@ -13,6 +13,7 @@ Block.prototype = {
 		return this.el.position();
 	},
 	shake: function() {	// 振动
+		return;
 		this.interval = setInterval(function() {
 			var left = this.position.left;
 			var top = this.position.top;
@@ -181,11 +182,30 @@ ImageDrag.prototype = {
 			me.addBlock(blockEl);
 		});
 	},
+	getContainerSize: function() {
+		var totalSize = this.blocks.length;
+		var rowsIndex = Math.ceil(totalSize / this.cols);
+		var colsIndex = this.cols;//this.colsIndex = totalSize % this.cols;
+		
+		// block间距
+		// 宽度高度
+		var margin = 10, width = height = 110;
+		
+		var left 	= colsIndex * width + (colsIndex * 2 + 1) * margin;
+		var top 	= (rowsIndex - 1) * height + (rowsIndex * 2) * margin;
+		
+		this.containerHeight 	= top + margin + height;
+		this.containerWidth 	= left + margin + width;
+		return {
+			width: this.containerWidth,
+			height: this.containerHeight
+		};
+	},
 	getNewPosition: function() {
 		
 		var totalSize = this.blocks.length;
-		var rowsIndex = this.rowsIndex = ~~(totalSize / this.cols);
-		var colsIndex = this.colsIndex = totalSize % this.cols;
+		var rowsIndex = ~~(totalSize / this.cols);
+		var colsIndex = totalSize % this.cols;
 		
 		// block间距
 		// 宽度高度
@@ -194,7 +214,7 @@ ImageDrag.prototype = {
 		var left 	= colsIndex * width + (colsIndex * 2 + 1) * margin;
 		var top 	= rowsIndex * height + (rowsIndex * 2 + 1) * margin;
 		
-		this.containerHeight = top + margin + height;
+		//this.containerHeight = top + margin + height;
 		return {
 			left: left,
 			top: top
@@ -247,9 +267,9 @@ ImageDrag.prototype = {
 					b.position = {
 						left: next.position.left,
 						top: next.position.top
-					}
+					};
 				}
-				b.el.animate(b.position, 150, function() {});
+				b.el.animate(b.position, 10, function() {});
 			}
 		}
 		
@@ -258,7 +278,11 @@ ImageDrag.prototype = {
 		blockEl.attr('idx', block.idx);
 		
 		this.blocks.push(block);
-		this.getContainer().height(this.containerHeight);
+		
+		var size = this.getContainerSize();
+		var container = this.getContainer();
+		//container.width(size.width);
+		container.height(size.height);
 	},
 	removeBlock: function(idx) {
 		/*
@@ -277,7 +301,7 @@ ImageDrag.prototype = {
 				b.position = {
 					left: prev.position.left,
 					top: prev.position.top,
-				}
+				};
 				
 				b.el.animate(b.position, 150, function() {});
 			}
@@ -295,6 +319,13 @@ ImageDrag.prototype = {
 			this.blocks[deleteIndex].el.remove();	// 删除dom
 			this.blocks.splice(deleteIndex, 1);	// 在blocks中删除
 		}
+		
+		var size = this.getContainerSize();
+		var container = this.getContainer();
+		//container.width(size.width);
+		container.animate({
+			height: size.height
+		}, 150);
 	},
 	
 	getOrderList: function() {
